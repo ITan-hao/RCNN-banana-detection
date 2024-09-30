@@ -1,5 +1,5 @@
 # RCNN-for-Banana-Dataset
-#### RCNN物体检测的简化实现（d2l-香蕉数据集）
+#### RCNN物体检测的简化实现
 
 --直接运行predict.py，则会利用提供的model与test_imgs进行测试
 
@@ -8,7 +8,6 @@
 链接：https://pan.baidu.com/s/1rjL266XTO2uBjRHXzclcVQ 
 提取码：lufh
 
---若要从头训练，则先运行selective_search.py生成相应数据集后，再运行train.py，然后运行predict.py就能得到结果
+--从头训练，先运行selective_search.py生成相应数据集后，再运行train.py，然后运行predict.py就能得到结果
   
-csdn博客链接：https://blog.csdn.net/Myshrry/article/details/124181381?spm=1001.2014.3001.5502
-# rnn-cnn-
+项目参考：[https://blog.csdn.net/Myshrry/article/details/124181381?spm=1001.2014.3001.5502](https://github.com/Myshrry/RCNN-for-Banana-Dataset)
