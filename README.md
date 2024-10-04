@@ -21,3 +21,15 @@ https://pan.baidu.com/s/1rjL266XTO2uBjRHXzclcVQ
 
   
 项目参考：[https://blog.csdn.net/Myshrry/article/details/124181381?spm=1001.2014.3001.5502](https://github.com/Myshrry/RCNN-for-Banana-Dataset)
+
+大概讲一下每个文件中模块的作用
+selective_search.py:
+  __init__ 设置csv文件路径，图片文件夹路径以及标志（flag）
+  cal_pro_region 用到OpenCV的ximgproc模块，用于执行选择性搜索，得到完整的边界信息
+  save 通过多线程并行处理图像
+  save_pr 根据给定的索引列表处理图像，调用utils.py文件中的cal_IoU计算出交并比，大于0.5则有效，同时保存裁剪后的图片到相应文件夹中
+
+  
+train.py
+ 先对图像进行预处理，组织和加载训练和评估的图像数据集，读取并处理，设置相关超参数等，读取模型权重变差，设置评估模式，调用bb_regression中train模块，利用给定的CSV文件作为输入图像路径和标签信息，结合transform转换图像，net模型以及设备设置来创建训练和验证数据加载器，查看训练结果
+  
