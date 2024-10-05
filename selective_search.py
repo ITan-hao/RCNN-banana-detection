@@ -1,4 +1,3 @@
-# slective search生成训练集，IoU>=0.5为positive
 import cv2
 import pandas as pd
 from utils import cal_IoU
@@ -18,9 +17,9 @@ class Selective_search():
         self.csv_path = os.path.join(dir_path, 'label.csv')
         self.imgs_path = os.path.join(dir_path, 'images')
         self.flag = dir_path.split('_')[-1]
-        self.num_per_image = 8 #self.num_per_image 是一个类变量，用于设置每张图片最多保存多少个候选区域
+        self.num_per_image = 8
         
-    @staticmethod #标记类的方法为静态方法
+    @staticmethod
     def cal_pro_region(img_path):
         '''计算每张图片的proposal region
         Args:
@@ -30,8 +29,7 @@ class Selective_search():
             OpenCV的ximgproc模块计算每个图像的候选区域（rects）
         '''
         try:
-            ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
-            #创建一个Selective Search Segmenter实例。
+            ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()#创建一个Selective Search Segmenter实例。
         except AttributeError:
             raise Exception('需要安装opencv-contrib-python, 安装前请先删除原有的opencv-python')
         ss.setBaseImage(cv2.imread(img_path))
@@ -42,7 +40,7 @@ class Selective_search():
         #xmin, ymin, xmax, ymax
         rects[:, 2] += rects[:, 0]
         rects[:, 3] += rects[:, 1]
-        #扩展了每个候选区域以包括其整个矩形。这样做的目的是为了得到完整的边界信息，以便后续可能的分析或操作。
+        #扩展了每个候选区域以包括其整个矩形,得到完整的边界信息
         return rects
 
     def save(self, num_workers=1):
@@ -61,13 +59,12 @@ class Selective_search():
         index = self.csv.index.to_list()
         span = len(index)//num_workers#平均每个进程应该处理的索引范围
         print(f'=======开始计算proposal regions of {self.flag} imgs...=======')
-        # (i * span)和(i + 1) * span表示当前进程负责处理的索引范围
-        # multiprocessing.Process 创建多个子进程，每个进程处理一部分图像，从而加快计算提案区域的速度。
+
         for i in range(num_workers):
             if i != num_workers-1:
                 multiprocessing.Process(target=self.save_pr, 
                             kwargs={'index': index[i*span:(i+1)*span]}).start()
-                #start() 方法会启动一个新的线程来执行 save_pr 函数，针对这些特定的索引进行操作
+                # (i * span)和(i + 1) * span表示当前进程负责处理的索引范围
             else:
                 multiprocessing.Process(target=self.save_pr, 
                             kwargs={'index': index[i*span:]}).start()
@@ -87,16 +84,12 @@ class Selective_search():
             gt_box = self.csv.iloc[row, 2:].values
             # 表示从CSV文件读取指定行的第二列之后的所有列（即GT box，ground truth boxes）
             # 并转换为NumPy数组形式，这样可以方便地进行后续的计算操作，
-            # 如IoU（Intersection over Union）匹配
-            img_path = os.path.join(self.imgs_path, img_name)#os.path.abspath 和 os.path.join 来构建绝对路径
-            region_pro = self.cal_pro_region(img_path) # self.cal_pro_region是一个静态方法，用于计算给定图像 img_path 的候选区域 proposal region坐标--num*4大小的np.array
+            img_path = os.path.join(self.imgs_path, img_name)
+            region_pro = self.cal_pro_region(img_path)
             IoU = cal_IoU(region_pro, gt_box)
-            # cal_IoU用于计算两个区域（region_pro是候选区域，gt_box是GroundTruthBox，即标注的边界框）
-            # 之间的IntersectionoverUnion(IoU，交并比) 的函数
-            # IoU是衡量两个形状重叠程度的一个指标，其值范围在0到1之间，如果
-            # IoU大于某个阈值（如0.5），通常认为候选区域与真实框有较高的匹配度。
-            locs_p = region_pro[np.where(IoU>=0.5)]  # IoU超过0.5，positive
-            locs_n = region_pro[np.where((IoU<0.5) & (0.1<IoU))] # IoU<0.5，negative
+
+            locs_p = region_pro[np.where(IoU>=0.5)]
+            locs_n = region_pro[np.where((IoU<0.5) & (0.1<IoU))]
             
             img = cv2.imread(img_path)
             for (j, loc) in enumerate(locs_p):
