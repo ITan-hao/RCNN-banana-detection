@@ -25,8 +25,8 @@ val_dataloader = DataLoader(val_data, batch_size=128)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 net = utils.get_Alexnet().to(device)
-epochs = 15 # 迭代次数
-lr = 0.001	# 学习率
+epochs = 15
+lr = 0.001
 criterion = [nn.CrossEntropyLoss(), nn.MSELoss()]
 
 fun1 = lambda x: x.startswith('classify') #用于确定是否已经完成了分类模型的训练
@@ -34,12 +34,11 @@ if not sum([fun1(n) for n in os.listdir('./model')]):
     utils.train(train_dataloader, val_dataloader, net, epochs, lr, criterion[0], device, len(train_data), len(val_data))
 
 net.load_state_dict(torch.load('./model/classify_5th_model.pth', map_location=device))
-#map_location=device 参数表示在加载过程中，如果原权重文件是GPU上训练的，由于net可能是在CPU上运行的，所以通过map_location指定将GPU上的内存映射到CPU上，以避免错误
 net.eval()
 
 fun2 = lambda x: x.startswith('regression')
 if not sum([fun2(n) for n in os.listdir('./model')]):
     bb_regression.train(net, epochs, lr, criterion[1], device, transform)
 
-# 查看一下Alexnet分类训练结果
+
 utils.show_predict(val_data, net, device, './model/classify_5th_model.pth', transform, val_data.classes)
